@@ -3,12 +3,13 @@
 // FREE TO USE AS LONG AS SOFTWARE FUNDS ARE DONATED TO THE POOR
 // ---------------------------------------------------------------
 
-namespace OtripleS.Web.Api.Models
+using System;
+
+namespace OtripleS.Web.Api.Models.Classrooms.Exceptions
 {
-    public enum TeacherStatus
+    public class ClassroomServiceException : Exception
     {
-        Active,
-        Retired,
-        Terminated
+        public ClassroomServiceException(Exception innerException)
+            : base("Service error occurred, contact support.", innerException) { }
     }
 }
