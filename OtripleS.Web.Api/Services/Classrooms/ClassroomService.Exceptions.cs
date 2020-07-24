@@ -4,6 +4,7 @@
 // ---------------------------------------------------------------
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using EFxceptions.Models.Exceptions;
 using Microsoft.Data.SqlClient;
@@ -16,6 +17,7 @@ namespace OtripleS.Web.Api.Services.Classrooms
     public partial class ClassroomService
     {
         private delegate ValueTask<Classroom> ReturningClassroomFunction();
+        private delegate IQueryable<Classroom> ReturningQueryableClassroomFunction();
 
         private async ValueTask<Classroom> TryCatch(ReturningClassroomFunction returningClassroomFunction)
         {
@@ -27,9 +29,17 @@ namespace OtripleS.Web.Api.Services.Classrooms
             {
                 throw CreateAndLogValidationException(nullClassroomException);
             }
+            catch (InvalidClassroomInputException invalidClassroomInputException)
+            {
+                throw CreateAndLogValidationException(invalidClassroomInputException);
+            }
             catch (InvalidClassroomException invalidClassroomException)
             {
                 throw CreateAndLogValidationException(invalidClassroomException);
+            }
+            catch (NotFoundClassroomException notFoundClassroomException)
+            {
+                throw CreateAndLogValidationException(notFoundClassroomException);
             }
             catch (SqlException sqlException)
             {
@@ -41,6 +51,32 @@ namespace OtripleS.Web.Api.Services.Classrooms
                     new AlreadyExistsClassroomException(duplicateKeyException);
 
                 throw CreateAndLogValidationException(alreadyExistsClassroomException);
+            }
+            catch (DbUpdateConcurrencyException dbUpdateConcurrencyException)
+            {
+                var lockedClassroomException = new LockedClassroomException(dbUpdateConcurrencyException);
+
+                throw CreateAndLogDependencyException(lockedClassroomException);
+            }
+            catch (DbUpdateException dbUpdateException)
+            {
+                throw CreateAndLogDependencyException(dbUpdateException);
+            }
+            catch (Exception exception)
+            {
+                throw CreateAndLogServiceException(exception);
+            }
+        }
+
+        private IQueryable<Classroom> TryCatch(ReturningQueryableClassroomFunction returningQueryableClassroomFunction)
+        {
+            try
+            {
+                return returningQueryableClassroomFunction();
+            }
+            catch (SqlException sqlException)
+            {
+                throw CreateAndLogCriticalDependencyException(sqlException);
             }
             catch (DbUpdateException dbUpdateException)
             {
