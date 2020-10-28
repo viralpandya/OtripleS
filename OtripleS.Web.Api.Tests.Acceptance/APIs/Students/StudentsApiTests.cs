@@ -34,7 +34,6 @@ namespace OtripleS.Web.Api.Tests.Acceptance.APIs.Students
         {
             DateTimeOffset now = DateTimeOffset.UtcNow;
             Guid posterId = Guid.NewGuid();
-
             var filler = new Filler<Student>();
 
             filler.Setup()
@@ -42,7 +41,10 @@ namespace OtripleS.Web.Api.Tests.Acceptance.APIs.Students
                 .OnProperty(student => student.UpdatedBy).Use(posterId)
                 .OnProperty(student => student.CreatedDate).Use(now)
                 .OnProperty(student => student.UpdatedDate).Use(now)
-                .OnType<DateTimeOffset>().Use(GetRandomDateTime());
+                .OnProperty(student => student.StudentSemesterCourses).IgnoreIt()
+                .OnType<DateTimeOffset>().Use(GetRandomDateTime())
+                .OnProperty(student => student.StudentGuardians).IgnoreIt()
+                .OnProperty(student => student.StudentContacts).IgnoreIt();
 
             return filler;
         }
@@ -50,7 +52,6 @@ namespace OtripleS.Web.Api.Tests.Acceptance.APIs.Students
         private Student UpdateStudentRandom(Student student)
         {
             DateTimeOffset now = DateTimeOffset.UtcNow;
-
             var filler = new Filler<Student>();
 
             filler.Setup()
@@ -59,7 +60,10 @@ namespace OtripleS.Web.Api.Tests.Acceptance.APIs.Students
                 .OnProperty(student => student.UpdatedBy).Use(student.UpdatedBy)
                 .OnProperty(student => student.CreatedDate).Use(student.CreatedDate)
                 .OnProperty(student => student.UpdatedDate).Use(now)
-                .OnType<DateTimeOffset>().Use(GetRandomDateTime());
+                .OnProperty(student => student.StudentSemesterCourses).IgnoreIt()
+                .OnProperty(student => student.StudentContacts).IgnoreIt()
+                .OnType<DateTimeOffset>().Use(GetRandomDateTime())
+                .OnProperty(student => student.StudentGuardians).IgnoreIt(); ;
 
             return filler.Create();
         }

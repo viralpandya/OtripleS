@@ -33,10 +33,6 @@ namespace OtripleS.Web.Api.Services.Classrooms
             {
                 throw CreateAndLogValidationException(invalidClassroomInputException);
             }
-            catch (InvalidClassroomException invalidClassroomException)
-            {
-                throw CreateAndLogValidationException(invalidClassroomException);
-            }
             catch (NotFoundClassroomException notFoundClassroomException)
             {
                 throw CreateAndLogValidationException(notFoundClassroomException);
@@ -68,7 +64,8 @@ namespace OtripleS.Web.Api.Services.Classrooms
             }
         }
 
-        private IQueryable<Classroom> TryCatch(ReturningQueryableClassroomFunction returningQueryableClassroomFunction)
+        private IQueryable<Classroom> TryCatch(
+            ReturningQueryableClassroomFunction returningQueryableClassroomFunction)
         {
             try
             {
