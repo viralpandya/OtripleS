@@ -4,7 +4,6 @@
 // ---------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization;
@@ -16,6 +15,7 @@ using OtripleS.Web.Api.Brokers.Storage;
 using OtripleS.Web.Api.Models.Students;
 using OtripleS.Web.Api.Services.Students;
 using Tynamix.ObjectFiller;
+using Xunit;
 
 namespace OtripleS.Web.Api.Tests.Unit.Services.Students
 {
@@ -44,15 +44,15 @@ namespace OtripleS.Web.Api.Tests.Unit.Services.Students
         private Student CreateRandomStudent(DateTimeOffset dates) =>
             CreateStudentFiller(dates).Create();
 
-        public static IEnumerable<object[]> InvalidMinuteCases()
+        public static TheoryData InvalidMinuteCases()
         {
             int randomMoreThanMinuteFromNow = GetRandomNumber();
             int randomMoreThanMinuteBeforeNow = GetNegativeRandomNumber();
 
-            return new List<object[]>
+            return new TheoryData<int>
             {
-                new object[] { randomMoreThanMinuteFromNow },
-                new object[] { randomMoreThanMinuteBeforeNow }
+                randomMoreThanMinuteFromNow ,
+                randomMoreThanMinuteBeforeNow
             };
         }
 
@@ -79,14 +79,19 @@ namespace OtripleS.Web.Api.Tests.Unit.Services.Students
         private static Filler<Student> CreateStudentFiller(DateTimeOffset dates)
         {
             var filler = new Filler<Student>();
+            Guid createdById = Guid.NewGuid();
 
             filler.Setup()
                 .OnProperty(student => student.BirthDate).Use(GetRandomDateTime())
                 .OnProperty(student => student.CreatedDate).Use(dates)
                 .OnProperty(student => student.UpdatedDate).Use(dates)
+                .OnProperty(student => student.CreatedBy).Use(createdById)
+                .OnProperty(student => student.UpdatedBy).Use(createdById)
                 .OnProperty(student => student.StudentSemesterCourses).IgnoreIt()
                 .OnProperty(student => student.StudentGuardians).IgnoreIt()
-                .OnProperty(student => student.StudentContacts).IgnoreIt();
+                .OnProperty(student => student.StudentContacts).IgnoreIt()
+                .OnProperty(student => student.StudentExams).IgnoreIt()
+                .OnProperty(student => student.StudentAttachments).IgnoreIt();
 
             return filler;
         }

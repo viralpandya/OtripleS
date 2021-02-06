@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using OtripleS.Web.Api.Models.GuardianContacts;
 using OtripleS.Web.Api.Models.StudentContacts;
 using OtripleS.Web.Api.Models.TeacherContacts;
+using OtripleS.Web.Api.Models.UserContacts;
 
 namespace OtripleS.Web.Api.Models.Contacts
 {
@@ -32,5 +33,8 @@ namespace OtripleS.Web.Api.Models.Contacts
 
         [JsonIgnore]
         public IEnumerable<GuardianContact> GuardianContacts { get; set; }
+
+        [JsonIgnore]
+        public IEnumerable<UserContact> UserContacts { get; set; }
     }
 }

@@ -7,71 +7,97 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
-using OtripleS.Web.Api.Models.StudentContacts;
+using OtripleS.Web.Api.Tests.Acceptance.Models.StudentContacts;
+using OtripleS.Web.Api.Tests.Acceptance.Models.Students;
+using RESTFulSense.Exceptions;
 using Xunit;
 
 namespace OtripleS.Web.Api.Tests.Acceptance.APIs.StudentContacts
 {
-	public partial class StudentContactsApiTests
-	{
-		[Fact]
-		public async Task ShouldGetAllStudentContactAsync()
-		{
-			// given
-			IEnumerable<StudentContact> randomStudentContacts = CreateRandomStudentContacts();
-			List<StudentContact> inputStudentContacts = randomStudentContacts.ToList();
+    public partial class StudentContactsApiTests
+    {
+        [Fact]
+        public async Task ShouldGetAllStudentContactAsync()
+        {
+            // given
+            Student randomStudent = await PostRandomStudentAsync();
+            List<StudentContact> randomStudentContacts = new List<StudentContact>();
 
-			foreach (StudentContact studentContact in inputStudentContacts)
-			{
-				await this.otripleSApiBroker.PostStudentContactAsync(studentContact);
-			}
+            for (int i = 0; i < GetRandomNumber(); i++)
+            {
+                randomStudentContacts.Add(await CreateRandomStudentContactAsync(randomStudent));
+            }
 
-			List<StudentContact> expectedStudentContacts = inputStudentContacts;
+            List<StudentContact> inputStudentContacts = randomStudentContacts;
+            List<StudentContact> expectedStudentContacts = inputStudentContacts;
 
-			// when
-			List<StudentContact> actualStudentContacts =
-				await this.otripleSApiBroker.GetAllStudentContactsAsync();
+            // when
+            List<StudentContact> actualStudentContacts =
+                await this.otripleSApiBroker.GetAllStudentContactsAsync();
 
-			// then
-			foreach (StudentContact expectedStudentContact in expectedStudentContacts)
-			{
-				StudentContact actualStudentContact = actualStudentContacts.Single(
-					studentContact => studentContact.StudentId == expectedStudentContact.StudentId
-					&& studentContact.ContactId == expectedStudentContact.ContactId
-					);
+            // then
+            foreach (StudentContact expectedStudentContact in expectedStudentContacts)
+            {
+                StudentContact actualStudentContact = actualStudentContacts.Single(
+                    studentContact => studentContact.StudentId == expectedStudentContact.StudentId
+                    && studentContact.ContactId == expectedStudentContact.ContactId
+                    );
 
-				StudentContact expectedReturnedStudentContact = CreateExpectedStudentContact(expectedStudentContact);
+                actualStudentContact.Should().BeEquivalentTo(expectedStudentContact);
 
-				actualStudentContact.Should().BeEquivalentTo(expectedReturnedStudentContact);
-				await this.otripleSApiBroker.DeleteStudentContactAsync(actualStudentContact.StudentId, actualStudentContact.ContactId);
-			}
-		}
+                await this.otripleSApiBroker.DeleteStudentContactAsync(
+                    actualStudentContact.StudentId, actualStudentContact.ContactId);
 
-		[Fact]
-		public async Task ShouldPostStudentContactAsync()
-		{
-			// given
-			StudentContact randomStudentContact = CreateRandomStudentContact();
-			StudentContact inputStudentContact = randomStudentContact;
-			StudentContact expectedStudentContact = inputStudentContact;
+                await this.otripleSApiBroker.DeleteContactByIdAsync(actualStudentContact.ContactId);
+            }
 
-			// when 
-			await this.otripleSApiBroker.PostStudentContactAsync(inputStudentContact);
+            await this.otripleSApiBroker.DeleteStudentByIdAsync(randomStudent.Id);
+        }
 
-			StudentContact actualStudentContact =
-				await this.otripleSApiBroker.GetStudentContactAsync(
-					inputStudentContact.StudentId,
-					inputStudentContact.ContactId);
+        [Fact]
+        public async Task ShouldPostStudentContactAsync()
+        {
+            // given
+            StudentContact randomStudentContact = await CreateRandomStudentContactAsync();
+            StudentContact inputStudentContact = randomStudentContact;
+            StudentContact expectedStudentContact = inputStudentContact;
 
-			// then
-			actualStudentContact.Should().BeEquivalentTo(expectedStudentContact,
-				options => options
-					.Excluding(StudentContact => StudentContact.Student)
-					.Excluding(StudentContact => StudentContact.Contact));
+            // when 
+            await this.otripleSApiBroker.PostStudentContactAsync(inputStudentContact);
 
-			await this.otripleSApiBroker.DeleteStudentContactAsync(
-				actualStudentContact.StudentId,
-				actualStudentContact.ContactId);
-		}
-	}
+            StudentContact actualStudentContact =
+                await this.otripleSApiBroker.GetStudentContactByIdsAsync(
+                    inputStudentContact.StudentId,
+                    inputStudentContact.ContactId);
+
+            // then
+            actualStudentContact.Should().BeEquivalentTo(expectedStudentContact);
+
+            await DeleteStudentContactAsync(actualStudentContact);
+        }
+
+        [Fact]
+        public async Task ShouldDeleteStudentContactAsync()
+        {
+            // given
+            StudentContact randomStudentContact = await PostStudentContactAsync();
+            StudentContact inputStudentContact = randomStudentContact;
+            StudentContact expectedStudentContact = inputStudentContact;
+
+            // when 
+            StudentContact deletedStudentContact =
+                await DeleteStudentContactAsync(inputStudentContact);
+
+            ValueTask<StudentContact> getStudentContactByIdTask =
+                this.otripleSApiBroker.GetStudentContactByIdsAsync(
+                    inputStudentContact.StudentId,
+                    inputStudentContact.ContactId);
+
+            // then
+            deletedStudentContact.Should().BeEquivalentTo(expectedStudentContact);
+
+            await Assert.ThrowsAsync<HttpResponseNotFoundException>(() =>
+               getStudentContactByIdTask.AsTask());
+        }
+    }
 }

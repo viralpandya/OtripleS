@@ -13,8 +13,6 @@ using Moq;
 using OtripleS.Web.Api.Brokers.DateTimes;
 using OtripleS.Web.Api.Brokers.Loggings;
 using OtripleS.Web.Api.Brokers.Storage;
-using OtripleS.Web.Api.Migrations;
-using OtripleS.Web.Api.Models.Students;
 using OtripleS.Web.Api.Models.StudentSemesterCourses;
 using OtripleS.Web.Api.Services.StudentSemesterCourses;
 using Tynamix.ObjectFiller;
@@ -45,6 +43,7 @@ namespace OtripleS.Web.Api.Tests.Unit.Services.StudentSemesterCourses
 
         private StudentSemesterCourse CreateRandomStudentSemesterCourse(DateTimeOffset dates) =>
             CreateStudentSemesterCourseFiller(dates).Create();
+
         private IQueryable<StudentSemesterCourse> CreateRandomStudentSemesterCourses() =>
             CreateStudentSemesterCourseFiller(DateTimeOffset.UtcNow).Create(GetRandomNumber()).AsQueryable();
 
@@ -52,11 +51,10 @@ namespace OtripleS.Web.Api.Tests.Unit.Services.StudentSemesterCourses
         {
             var filler = new Filler<StudentSemesterCourse>();
             filler.Setup()
-                .OnType<DateTimeOffset>().Use(dates)
                 .OnProperty(semesterCourse => semesterCourse.CreatedDate).Use(dates)
                 .OnProperty(semesterCourse => semesterCourse.UpdatedDate).Use(dates)
-                .OnType<Student>().IgnoreIt()
-                .OnType<SemesterCourse>().IgnoreIt();
+                .OnProperty(semesterCourse => semesterCourse.Student).IgnoreIt()
+                .OnProperty(semesterCourse => semesterCourse.SemesterCourse).IgnoreIt();
 
             return filler;
         }

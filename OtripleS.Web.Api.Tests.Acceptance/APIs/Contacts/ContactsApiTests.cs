@@ -4,23 +4,21 @@
 // ---------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using OtripleS.Web.Api.Models.Contacts;
+using System.Threading.Tasks;
 using OtripleS.Web.Api.Tests.Acceptance.Brokers;
+using OtripleS.Web.Api.Tests.Acceptance.Models.Contacts;
 using Tynamix.ObjectFiller;
 using Xunit;
 
-namespace OtripleS.Web.Api.Tests.Acceptance.Contacts
+namespace OtripleS.Web.Api.Tests.Acceptance.APIs.Contacts
 {
     [Collection(nameof(ApiTestCollection))]
     public partial class ContactsApiTests
     {
         private readonly OtripleSApiBroker otripleSApiBroker;
 
-        public ContactsApiTests(OtripleSApiBroker otripleSApiBroker)
-        {
+        public ContactsApiTests(OtripleSApiBroker otripleSApiBroker) =>
             this.otripleSApiBroker = otripleSApiBroker;
-        }
 
         private static int GetRandomNumber() => new IntRange(min: 2, max: 10).GetValue();
 
@@ -30,8 +28,13 @@ namespace OtripleS.Web.Api.Tests.Acceptance.Contacts
         private static Contact CreateRandomContact() =>
             CreateRandomContactFiller().Create();
 
-        private IEnumerable<Contact> CreateRandomContacts() =>
-            CreateRandomContactFiller().Create(GetRandomNumber());
+        private async ValueTask<Contact> PostRandomContactAsync()
+        {
+            Contact randomContact = CreateRandomContact();
+            await this.otripleSApiBroker.PostContactAsync(randomContact);
+
+            return randomContact;
+        }
 
         private Contact UpdateContactRandom(Contact contact)
         {
@@ -48,9 +51,6 @@ namespace OtripleS.Web.Api.Tests.Acceptance.Contacts
                 .OnProperty(contact => contact.UpdatedBy).Use(contact.UpdatedBy)
                 .OnProperty(contact => contact.CreatedDate).Use(contact.CreatedDate)
                 .OnProperty(contact => contact.UpdatedDate).Use(now)
-                .OnProperty(contact => contact.StudentContacts).IgnoreIt()
-                .OnProperty(contact => contact.TeacherContacts).IgnoreIt()
-                .OnProperty(contact => contact.GuardianContacts).IgnoreIt()
                 .OnType<DateTimeOffset>().Use(GetRandomDateTime());
 
             return filler.Create();
@@ -64,9 +64,6 @@ namespace OtripleS.Web.Api.Tests.Acceptance.Contacts
             filler.Setup()
                 .OnProperty(contact => contact.CreatedBy).Use(randomCreatedUpdatedById)
                 .OnProperty(contact => contact.UpdatedBy).Use(randomCreatedUpdatedById)
-                .OnProperty(contact => contact.StudentContacts).IgnoreIt()
-                .OnProperty(contact => contact.TeacherContacts).IgnoreIt()
-                .OnProperty(contact => contact.GuardianContacts).IgnoreIt()
                 .OnType<DateTimeOffset>().Use(DateTimeOffset.UtcNow);
 
             return filler;

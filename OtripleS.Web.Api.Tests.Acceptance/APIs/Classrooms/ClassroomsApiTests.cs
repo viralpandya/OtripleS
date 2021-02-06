@@ -4,9 +4,9 @@
 // ---------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using OtripleS.Web.Api.Models.Classrooms;
+using System.Threading.Tasks;
 using OtripleS.Web.Api.Tests.Acceptance.Brokers;
+using OtripleS.Web.Api.Tests.Acceptance.Models.Classrooms;
 using Tynamix.ObjectFiller;
 using Xunit;
 
@@ -17,35 +17,20 @@ namespace OtripleS.Web.Api.Tests.Acceptance.APIs.Classrooms
     {
         private readonly OtripleSApiBroker otripleSApiBroker;
 
-        public ClassroomsApiTests(OtripleSApiBroker otripleSApiBroker)
-        {
+        public ClassroomsApiTests(OtripleSApiBroker otripleSApiBroker) =>
             this.otripleSApiBroker = otripleSApiBroker;
-        }
 
         private static int GetRandomNumber() => new IntRange(min: 2, max: 10).GetValue();
-
-        private IEnumerable<Classroom> GetRandomClassrooms() =>
-            CreateRandomClassroomFiller().Create(GetRandomNumber());
 
         private Classroom CreateRandomClassroom() =>
             CreateRandomClassroomFiller().Create();
 
-        private Filler<Classroom> CreateRandomClassroomFiller()
+        private async ValueTask<Classroom> PostRandomClassroomAsync()
         {
-            DateTimeOffset now = DateTimeOffset.UtcNow;
-            Guid posterId = Guid.NewGuid();
+            Classroom randomClassroom = CreateRandomClassroom();
+            await this.otripleSApiBroker.PostClassroomAsync(randomClassroom);
 
-            var filler = new Filler<Classroom>();
-
-            filler.Setup()
-                .OnProperty(classroom => classroom.CreatedBy).Use(posterId)
-                .OnProperty(classroom => classroom.UpdatedBy).Use(posterId)
-                .OnProperty(classroom => classroom.CreatedDate).Use(now)
-                .OnProperty(classroom => classroom.UpdatedDate).Use(now)
-                .OnType<DateTimeOffset>().Use(GetRandomDateTime())
-                .OnProperty(classroom => classroom.SemesterCourses).IgnoreIt();
-
-            return filler;
+            return randomClassroom;
         }
 
         private Classroom UpdateClassroomRandom(Classroom classroom)
@@ -60,13 +45,29 @@ namespace OtripleS.Web.Api.Tests.Acceptance.APIs.Classrooms
                 .OnProperty(classroom => classroom.UpdatedBy).Use(classroom.UpdatedBy)
                 .OnProperty(classroom => classroom.CreatedDate).Use(classroom.CreatedDate)
                 .OnProperty(classroom => classroom.UpdatedDate).Use(now)
-                .OnType<DateTimeOffset>().Use(GetRandomDateTime())
-                .OnProperty(classroom => classroom.SemesterCourses).IgnoreIt();
+                .OnType<DateTimeOffset>().Use(GetRandomDateTime());
 
             return filler.Create();
         }
 
         private static DateTimeOffset GetRandomDateTime() =>
             new DateTimeRange(earliestDate: new DateTime()).GetValue();
+
+        private Filler<Classroom> CreateRandomClassroomFiller()
+        {
+            DateTimeOffset now = DateTimeOffset.UtcNow;
+            Guid posterId = Guid.NewGuid();
+
+            var filler = new Filler<Classroom>();
+
+            filler.Setup()
+                .OnProperty(classroom => classroom.CreatedBy).Use(posterId)
+                .OnProperty(classroom => classroom.UpdatedBy).Use(posterId)
+                .OnProperty(classroom => classroom.CreatedDate).Use(now)
+                .OnProperty(classroom => classroom.UpdatedDate).Use(now)
+                .OnType<DateTimeOffset>().Use(GetRandomDateTime());
+
+            return filler;
+        }
     }
 }

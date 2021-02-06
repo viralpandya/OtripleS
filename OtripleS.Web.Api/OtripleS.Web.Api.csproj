@@ -7,23 +7,30 @@
   <ItemGroup>
     <Compile Remove="Migrations\20200907054733_AddGuardian.cs" />
     <Compile Remove="Migrations\20200907054733_AddGuardian.Designer.cs" />
+    <Compile Remove="Services\CalendarEntries\CalendarEntry.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="5.0.0-rc.2.20475.17" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.0-rc.2.20475.6" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.0-rc.2.20475.6">
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="5.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="5.0.0-rc.2.20516.1" />
-    <PackageReference Include="RESTFulSense" Version="1.7.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="5.0.0" />
     <PackageReference Include="EFxceptions.Identity" Version="0.4.4" />
+    <PackageReference Include="RESTFulSense" Version="1.7.0" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\Users\Exceptions\" />
     <Folder Include="Brokers\UserManagement\" />
     <Folder Include="Services\Guardians\" />
     <Folder Include="Services\StudentContacts\" />
+    <Folder Include="Services\StudentExams\" />
+    <Folder Include="Services\Calendars\" />
+    <Folder Include="Services\CalendarEntries\" />
+    <Folder Include="Services\StudentAttachments\" />
+    <Folder Include="Services\GuardianAttachmets\" />
+    <Folder Include="Models\GuardianAttachments\Exceptions\" />
   </ItemGroup>
 </Project>

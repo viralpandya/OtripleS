@@ -17,19 +17,30 @@ using OtripleS.Web.Api.Brokers.Storage;
 using OtripleS.Web.Api.Brokers.UserManagement;
 using OtripleS.Web.Api.Models.Users;
 using OtripleS.Web.Api.Services.Assignments;
+using OtripleS.Web.Api.Services.Attachments;
 using OtripleS.Web.Api.Services.Attendances;
+using OtripleS.Web.Api.Services.CalendarEntries;
+using OtripleS.Web.Api.Services.CalendarEntryAttachments;
+using OtripleS.Web.Api.Services.Calendars;
 using OtripleS.Web.Api.Services.Classrooms;
 using OtripleS.Web.Api.Services.Contacts;
+using OtripleS.Web.Api.Services.CourseAttachments;
 using OtripleS.Web.Api.Services.Courses;
+using OtripleS.Web.Api.Services.Exams;
+using OtripleS.Web.Api.Services.GuardianAttachments;
 using OtripleS.Web.Api.Services.GuardianContacts;
 using OtripleS.Web.Api.Services.Guardians;
 using OtripleS.Web.Api.Services.SemesterCourses;
+using OtripleS.Web.Api.Services.StudentAttachments;
 using OtripleS.Web.Api.Services.StudentContacts;
+using OtripleS.Web.Api.Services.StudentExams;
 using OtripleS.Web.Api.Services.StudentGuardians;
 using OtripleS.Web.Api.Services.Students;
 using OtripleS.Web.Api.Services.StudentSemesterCourses;
+using OtripleS.Web.Api.Services.TeacherAttachments;
 using OtripleS.Web.Api.Services.TeacherContacts;
 using OtripleS.Web.Api.Services.Teachers;
+using OtripleS.Web.Api.Services.UserContacts;
 using OtripleS.Web.Api.Services.Users;
 
 namespace OtripleS.Web.Api
@@ -73,6 +84,17 @@ namespace OtripleS.Web.Api
             services.AddTransient<IStudentContactService, StudentContactService>();
             services.AddTransient<ITeacherContactService, TeacherContactService>();
             services.AddTransient<IGuardianContactService, GuardianContactService>();
+            services.AddTransient<IUserContactService, UserContactService>();
+            services.AddTransient<IExamService, ExamService>();
+            services.AddTransient<IStudentExamService, StudentExamService>();
+            services.AddTransient<ICalendarService, CalendarService>();
+            services.AddTransient<ICalendarEntryService, CalendarEntryService>();
+            services.AddTransient<IAttachmentService, AttachmentService>();
+            services.AddTransient<IStudentAttachmentService, StudentAttachmentService>();
+            services.AddTransient<IGuardianAttachmentService, GuardianAttachmentService>();
+            services.AddTransient<ITeacherAttachmentService, TeacherAttachmentService>();
+            services.AddTransient<ICalendarEntryAttachmentService, CalendarEntryAttachmentService>();
+            services.AddTransient<ICourseAttachmentService, CourseAttachmentService>();
 
             services.AddIdentityCore<User>()
                     .AddRoles<Role>()

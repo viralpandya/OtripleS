@@ -82,8 +82,9 @@ namespace OtripleS.Web.Api.Tests.Unit.Services.Teachers
             filler.Setup()
                 .OnType<DateTimeOffset>().Use(dates)
                 .OnProperty(teacher => teacher.SemesterCourses).IgnoreIt()
-                .OnProperty(teacher => teacher.TeacherContacts).IgnoreIt();
-
+                .OnProperty(teacher => teacher.TeacherContacts).IgnoreIt()
+                .OnProperty(teacher => teacher.ReviewedStudentExams).IgnoreIt()
+                .OnProperty(teacher => teacher.TeacherAttachments).IgnoreIt();
 
             return filler;
         }

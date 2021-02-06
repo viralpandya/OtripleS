@@ -1,7 +1,12 @@
+// ---------------------------------------------------------------
+// Copyright (c) Coalition of the Good-Hearted Engineers
+// FREE TO USE AS LONG AS SOFTWARE FUNDS ARE DONATED TO THE POOR
+// ---------------------------------------------------------------
+
 using System;
-using System.Collections.Generic;
-using OtripleS.Web.Api.Models.Assignments;
+using System.Threading.Tasks;
 using OtripleS.Web.Api.Tests.Acceptance.Brokers;
+using OtripleS.Web.Api.Tests.Acceptance.Models.Assignments;
 using Tynamix.ObjectFiller;
 using Xunit;
 
@@ -12,34 +17,20 @@ namespace OtripleS.Web.Api.Tests.Acceptance.APIs.Assignments
     {
         private OtripleSApiBroker otripleSApiBroker;
 
-        public AssignmentsApiTests(OtripleSApiBroker otripleSApiBroker)
-        {
+        public AssignmentsApiTests(OtripleSApiBroker otripleSApiBroker) =>
             this.otripleSApiBroker = otripleSApiBroker;
-        }
-        private static int GetRandomNumber() => new IntRange(min: 2, max: 10).GetValue();
 
-        private IEnumerable<Assignment> GetRandomAssignments() =>
-            CreateRandomAssignmentFiller().Create(GetRandomNumber());
+        private static int GetRandomNumber() => new IntRange(min: 2, max: 10).GetValue();
 
         private Assignment CreateRandomAssignment() =>
             CreateRandomAssignmentFiller().Create();
 
-        private Filler<Assignment> CreateRandomAssignmentFiller()
+        private async ValueTask<Assignment> PostRandomAssignmentAsync()
         {
-            DateTimeOffset now = DateTimeOffset.UtcNow;
-            Guid posterId = Guid.NewGuid();
+            Assignment randomAssignment = CreateRandomAssignment();
+            await this.otripleSApiBroker.PostAssignmentAsync(randomAssignment);
 
-            var filler = new Filler<Assignment>();
-
-            filler.Setup()
-                .OnProperty(assignment => assignment.CreatedBy).Use(posterId)
-                .OnProperty(assignment => assignment.UpdatedBy).Use(posterId)
-                .OnProperty(assignment => assignment.CreatedDate).Use(now)
-                .OnProperty(assignment => assignment.UpdatedDate).Use(now)
-                .OnProperty(assignment => assignment.Deadline).Use(now)
-                .OnType<DateTimeOffset>().Use(GetRandomDateTime());
-
-            return filler;
+            return randomAssignment;
         }
 
         private Assignment UpdateAssignmentRandom(Assignment inputAssignment)
@@ -59,8 +50,25 @@ namespace OtripleS.Web.Api.Tests.Acceptance.APIs.Assignments
             return filler.Create();
         }
 
-
         private static DateTimeOffset GetRandomDateTime() =>
             new DateTimeRange(earliestDate: new DateTime()).GetValue();
+
+        private Filler<Assignment> CreateRandomAssignmentFiller()
+        {
+            DateTimeOffset now = DateTimeOffset.UtcNow;
+            Guid posterId = Guid.NewGuid();
+
+            var filler = new Filler<Assignment>();
+
+            filler.Setup()
+                .OnProperty(assignment => assignment.CreatedBy).Use(posterId)
+                .OnProperty(assignment => assignment.UpdatedBy).Use(posterId)
+                .OnProperty(assignment => assignment.CreatedDate).Use(now)
+                .OnProperty(assignment => assignment.UpdatedDate).Use(now)
+                .OnProperty(assignment => assignment.Deadline).Use(now)
+                .OnType<DateTimeOffset>().Use(GetRandomDateTime());
+
+            return filler;
+        }
     }
 }

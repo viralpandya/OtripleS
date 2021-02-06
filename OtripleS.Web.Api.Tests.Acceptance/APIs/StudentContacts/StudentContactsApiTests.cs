@@ -4,100 +4,125 @@
 // ---------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using Force.DeepCloner;
-using OtripleS.Web.Api.Models.Contacts;
-using OtripleS.Web.Api.Models.StudentContacts;
-using OtripleS.Web.Api.Models.Students;
+using System.Threading.Tasks;
 using OtripleS.Web.Api.Tests.Acceptance.Brokers;
+using OtripleS.Web.Api.Tests.Acceptance.Models.Contacts;
+using OtripleS.Web.Api.Tests.Acceptance.Models.StudentContacts;
+using OtripleS.Web.Api.Tests.Acceptance.Models.Students;
 using Tynamix.ObjectFiller;
 using Xunit;
 
 namespace OtripleS.Web.Api.Tests.Acceptance.APIs.StudentContacts
 {
-	[Collection(nameof(ApiTestCollection))]
-	public partial class StudentContactsApiTests
-	{
-		private readonly OtripleSApiBroker otripleSApiBroker;
+    [Collection(nameof(ApiTestCollection))]
+    public partial class StudentContactsApiTests
+    {
+        private readonly OtripleSApiBroker otripleSApiBroker;
 
-		public StudentContactsApiTests(OtripleSApiBroker otripleSApiBroker) =>
-			this.otripleSApiBroker = otripleSApiBroker;
+        public StudentContactsApiTests(OtripleSApiBroker otripleSApiBroker) =>
+            this.otripleSApiBroker = otripleSApiBroker;
 
-		private static StudentContact CreateRandomStudentContact() =>
-			CreateStudentContactFiller().Create();
+        private static Student CreateRandomStudent() =>
+            CreateStudentFiller().Create();
 
-		private static IEnumerable<StudentContact> CreateRandomStudentContacts() =>
-			Enumerable.Range(start: 0, count: GetRandomNumber())
-				.Select(item => CreateRandomStudentContact());
+        private static Contact CreateRandomContact() =>
+            CreateContactFiller().Create();
 
-		private StudentContact CreateExpectedStudentContact(StudentContact studentContact)
-		{
-			StudentContact expectedStudentContact = studentContact.DeepClone();
-			expectedStudentContact.Contact = null;
-			expectedStudentContact.Student = null;
+        private static int GetRandomNumber() =>
+            new IntRange(min: 2, max: 10).GetValue();
 
-			return expectedStudentContact;
-		}
+        private async ValueTask<StudentContact> CreateRandomStudentContactAsync()
+        {
+            Contact randomContact = await PostRandomContactAsync();
+            Student randomStudent = await PostRandomStudentAsync();
+            var filler = new Filler<StudentContact>();
 
-		private static Student CreateRandomStudent() =>
-			CreateStudentFiller().Create();
+            filler.Setup()
+                .OnProperty(studentContact => studentContact.StudentId).Use(randomStudent.Id)
+                .OnProperty(studentContact => studentContact.ContactId).Use(randomContact.Id);
 
-		private static Contact CreateRandomContact() =>
-			CreateContactFiller().Create();
+            StudentContact studentContact = filler.Create();
 
-		private static int GetRandomNumber() =>
-			new IntRange(min: 2, max: 10).GetValue();
+            return studentContact;
+        }
 
-		private static Filler<StudentContact> CreateStudentContactFiller()
-		{
-			Contact randomContact = CreateRandomContact();
-			Student randomStudent = CreateRandomStudent();
-			var filler = new Filler<StudentContact>();
+        private async ValueTask<StudentContact> CreateRandomStudentContactAsync(Student student)
+        {
+            Contact randomContact = await PostRandomContactAsync();
+            var filler = new Filler<StudentContact>();
 
-			filler.Setup()
-				.OnProperty(studentContact => studentContact.Student).Use(randomStudent)
-				.OnProperty(studentContact => studentContact.StudentId).Use(randomStudent.Id)
-				.OnProperty(studentContact => studentContact.Contact).Use(randomContact)
-				.OnProperty(studentContact => studentContact.ContactId).Use(randomContact.Id);
+            filler.Setup()
+                .OnProperty(studentContact => studentContact.StudentId).Use(student.Id)
+                .OnProperty(studentContact => studentContact.ContactId).Use(randomContact.Id);
 
-			return filler;
-		}
+            StudentContact studentContact = filler.Create();
 
-		private static Filler<Contact> CreateContactFiller()
-		{
-			Filler<Contact> filler = new Filler<Contact>();
-			Guid randomCreatedUpdatedById = Guid.NewGuid();
+            return await this.otripleSApiBroker.PostStudentContactAsync(studentContact);
+        }
 
-			filler.Setup()
-				.OnProperty(contact => contact.CreatedBy).Use(randomCreatedUpdatedById)
-				.OnProperty(contact => contact.UpdatedBy).Use(randomCreatedUpdatedById)
-				.OnProperty(contact => contact.StudentContacts).IgnoreIt()
-				.OnProperty(contact => contact.GuardianContacts).IgnoreIt()
-				.OnProperty(contact => contact.TeacherContacts).IgnoreIt()
-				.OnType<DateTimeOffset>().Use(DateTimeOffset.UtcNow);
+        private async ValueTask<Student> PostRandomStudentAsync()
+        {
+            Student randomStudent = CreateRandomStudent();
 
-			return filler;
-		}
+            return await this.otripleSApiBroker.PostStudentAsync(randomStudent);
+        }
 
-		private static Filler<Student> CreateStudentFiller()
-		{
-			DateTimeOffset now = DateTimeOffset.UtcNow;
-			Guid posterId = Guid.NewGuid();
+        private async ValueTask<Contact> PostRandomContactAsync()
+        {
+            Contact randomContact = CreateRandomContact();
 
-			var filler = new Filler<Student>();
+            return await this.otripleSApiBroker.PostContactAsync(randomContact);
+        }
 
-			filler.Setup()
-				.OnProperty(student => student.CreatedBy).Use(posterId)
-				.OnProperty(student => student.UpdatedBy).Use(posterId)
-				.OnProperty(student => student.CreatedDate).Use(now)
-				.OnProperty(student => student.UpdatedDate).Use(now)
-				.OnType<DateTimeOffset>().Use(DateTimeOffset.UtcNow)
-				.OnProperty(student => student.StudentSemesterCourses).IgnoreIt()
-				.OnProperty(student => student.StudentGuardians).IgnoreIt()
-				.OnProperty(student => student.StudentContacts).IgnoreIt();
+        private static Filler<Contact> CreateContactFiller()
+        {
+            Filler<Contact> filler = new Filler<Contact>();
+            Guid randomCreatedUpdatedById = Guid.NewGuid();
 
-			return filler;
-		}
-	}
+            filler.Setup()
+                .OnProperty(contact => contact.CreatedBy).Use(randomCreatedUpdatedById)
+                .OnProperty(contact => contact.UpdatedBy).Use(randomCreatedUpdatedById)
+                .OnType<DateTimeOffset>().Use(DateTimeOffset.UtcNow);
+
+            return filler;
+        }
+
+        public async ValueTask<StudentContact> PostStudentContactAsync()
+        {
+            StudentContact randomStudentContact =
+                await CreateRandomStudentContactAsync();
+
+            return await this.otripleSApiBroker.PostStudentContactAsync(randomStudentContact);
+        }
+
+        private async ValueTask<StudentContact> DeleteStudentContactAsync(StudentContact studentContact)
+        {
+            StudentContact deletedStudentContact =
+                await this.otripleSApiBroker.DeleteStudentContactAsync(
+                    studentContact.StudentId,
+                    studentContact.ContactId);
+
+            await this.otripleSApiBroker.DeleteContactByIdAsync(studentContact.ContactId);
+            await this.otripleSApiBroker.DeleteStudentByIdAsync(studentContact.StudentId);
+
+            return deletedStudentContact;
+        }
+
+        private static Filler<Student> CreateStudentFiller()
+        {
+            DateTimeOffset now = DateTimeOffset.UtcNow;
+            Guid posterId = Guid.NewGuid();
+
+            var filler = new Filler<Student>();
+
+            filler.Setup()
+                .OnProperty(student => student.CreatedBy).Use(posterId)
+                .OnProperty(student => student.UpdatedBy).Use(posterId)
+                .OnProperty(student => student.CreatedDate).Use(now)
+                .OnProperty(student => student.UpdatedDate).Use(now)
+                .OnType<DateTimeOffset>().Use(DateTimeOffset.UtcNow);
+
+            return filler;
+        }
+    }
 }

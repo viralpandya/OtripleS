@@ -49,7 +49,7 @@ namespace OtripleS.Web.Api.Controllers
             try
             {
                 Assignment storageAssignment =
-                    await this.assignmentService.RetrieveAssignmentById(assignmentId);
+                    await this.assignmentService.RetrieveAssignmentByIdAsync(assignmentId);
 
                 return Ok(storageAssignment);
             }
@@ -115,7 +115,7 @@ namespace OtripleS.Web.Api.Controllers
             try
             {
                 Assignment storageAssignment =
-                    await this.assignmentService.DeleteAssignmentAsync(assignmentId);
+                    await this.assignmentService.RemoveAssignmentByIdAsync(assignmentId);
 
                 return Ok(storageAssignment);
             }
